@@ -1,6 +1,6 @@
 [project]
 name = "prgen"
-version = "0.0.2"
+version = "0.0.3"
 authors = [{ name="lugen4ro", email="lugen4ro@gmail.com" }]
 description = "CLI tool to autogenerate GitHub PRs"
 readme = "README.md"
