@@ -13,8 +13,8 @@ license = "MIT"
 license-files = ["LICEN[CS]E*"]
 
 [project.urls]
-Homepage = "https://github.com/lugen4ro/prgen"
-Issues = "https://github.com/lugen4ro/prgen/issues"
+source = "https://github.com/lugen4ro/prgen"
+issues = "https://github.com/lugen4ro/prgen/issues"
 
 [project.scripts]
 prgen = "prgen.main:main"
