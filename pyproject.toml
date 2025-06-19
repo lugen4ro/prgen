@@ -4,7 +4,7 @@ version = "0.0.3"
 authors = [{ name="lugen4ro", email="lugen4ro@gmail.com" }]
 description = "CLI tool to autogenerate GitHub PRs"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "pydantic>=2.6.0",
     "openai>=1.0.0",
@@ -58,11 +58,11 @@ reportMissingTypeStubs = false
 
 # Pydantic specific settings
 reportInvalidStringEscapeSequence = "none"
-pythonVersion = "3.9"
+pythonVersion = "3.10"
 
 [tool.ruff]
 line-length = 120  # Matches black's default line length
-target-version = "py39"
+target-version = "py310"
 src = ["src"]
 
 [tool.ruff.lint]

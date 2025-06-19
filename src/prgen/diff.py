@@ -1,8 +1,7 @@
 import subprocess
-from typing import Optional
 
 
-def get_diff() -> Optional[str]:
+def get_diff() -> str | None:
     """
     Get the git diff between the current branch and the default target branch.
 

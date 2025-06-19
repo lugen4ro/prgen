@@ -1,6 +1,5 @@
 """Factory for creating LLM clients."""
 
-from typing import List, Optional
 
 from .anthropic_client import AnthropicClient
 from .base import BaseLLMClient, LLMProvider
@@ -18,7 +17,7 @@ class LLMClientFactory:
     }
 
     @classmethod
-    def create_client(cls, provider: Optional[LLMProvider] = None) -> BaseLLMClient:
+    def create_client(cls, provider: LLMProvider | None = None) -> BaseLLMClient:
         """
         Create an LLM client.
 
@@ -60,7 +59,7 @@ class LLMClientFactory:
         )
 
     @classmethod
-    def get_available_providers(cls) -> List[LLMProvider]:
+    def get_available_providers(cls) -> list[LLMProvider]:
         """Get list of available providers based on installed packages and API keys."""
         available = []
         for provider_enum, client_class in cls._providers.items():

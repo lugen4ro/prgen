@@ -1,10 +1,9 @@
-from typing import Optional
 
 from .llm_providers import LLMClientFactory, LLMProvider
 from .prompts.pr_description import get_pr_description_prompt
 
 
-def generate_pr_description(diff: str, provider: Optional[LLMProvider] = None) -> str:
+def generate_pr_description(diff: str, provider: LLMProvider | None = None) -> str:
     """
     Generate PR description using specified or auto-detected LLM provider.
 
