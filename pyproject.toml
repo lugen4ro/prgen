@@ -44,9 +44,11 @@ dependencies = [
 lint = "ruff check ."
 lint-fix = "ruff check --fix ."
 format = "ruff format ."
+format-check = "ruff format --check ."
 typecheck = "pyright"
 test = "pytest"
 checks = ["typecheck", "lint"]
+ci-local = ["lint", "format-check", "typecheck", "test"]
 
 [tool.pyright]
 include = ["src"]

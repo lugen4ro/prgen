@@ -25,14 +25,22 @@ pip install -e ".[dev]"
 hatch run lint         # Check code with ruff
 hatch run lint-fix     # Auto-fix linting issues
 hatch run format       # Format code with ruff
+hatch run format-check # Check formatting without changing files
 hatch run typecheck    # Run pyright type checking
+hatch run test         # Run pytest tests
 hatch run checks       # Run both typecheck and lint
+hatch run ci-local     # Run ALL CI checks locally (recommended before commit)
+
+# Local CI script (runs same checks as GitHub Actions)
+./scripts/ci-local.sh  # Comprehensive check before push
 
 # Manual tool usage
 ruff check .           # Direct ruff linting
 ruff check --fix .     # Direct ruff auto-fix
 ruff format .          # Direct ruff formatting
+ruff format --check .  # Check formatting without changes
 pyright               # Direct type checking
+pytest                # Direct test running
 ```
 
 ### Installation & Usage
