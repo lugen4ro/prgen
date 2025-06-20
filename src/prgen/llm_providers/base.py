@@ -25,8 +25,8 @@ class BaseLLMClient(ABC):
     """Base class for LLM clients."""
 
     @abstractmethod
-    def generate_pr_description(self, prompt: str) -> PRResponse:
-        """Generate PR description from prompt."""
+    def generate_pr_content(self, prompt: str) -> PRResponse:
+        """Generate PR title and description from prompt."""
         pass
 
     @abstractmethod

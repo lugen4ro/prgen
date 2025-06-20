@@ -21,7 +21,7 @@ class OpenAIClient(BaseLLMClient):
     def is_available(self) -> bool:
         return bool(os.getenv("OPENAI_API_KEY"))
 
-    def generate_pr_description(self, prompt: str) -> PRResponse:
+    def generate_pr_content(self, prompt: str) -> PRResponse:
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise ValueError("OPENAI_API_KEY environment variable not set")

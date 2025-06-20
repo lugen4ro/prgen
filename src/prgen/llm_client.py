@@ -1,22 +1,21 @@
 from .llm_providers import LLMClientFactory, LLMProvider
-from .prompts.pr_description import get_pr_description_prompt
+from .prompts.pr_description import get_pr_content_prompt
 
 
-def generate_pr_description(diff: str, provider: LLMProvider | None = None) -> str:
+def generate_pr_content(diff: str, provider: LLMProvider | None = None) -> tuple[str, str]:
     """
-    Generate PR description using specified or auto-detected LLM provider.
+    Generate PR title and description using specified or auto-detected LLM provider.
 
     Args:
         diff: Git diff content to analyze
         provider: Optional specific provider to use. If None, auto-detect.
 
     Returns:
-        Generated PR description string
+        Tuple of (title, description)
     """
-    prompt = get_pr_description_prompt(diff)
+    prompt = get_pr_content_prompt(diff)
 
     client = LLMClientFactory.create_client(provider)
-    response = client.generate_pr_description(prompt)
+    response = client.generate_pr_content(prompt)
 
-    # Format the response as a single string for backward compatibility
-    return f"{response.title}\n\n{response.body}"
+    return response.title, response.body
