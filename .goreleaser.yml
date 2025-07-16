@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+builds:
+  - binary: prgen
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+
+universal_binaries:
+  # Whether to remove the previous single-arch binaries from the artifact list.
+  # If left as false, your end release might have as much as three
+  # archives for macOS: 'amd64', 'arm64' and 'all'.
+  - replace: true
+
+
+homebrew_casks:
+  - name: prgen
+    homepage: https://github.com/lugen4ro/prgen
+    commit_author:
+      name: lugen4ro
+      email: lugen4ro@gmail.com
+    repository:
+      owner: lugen4ro
+      name: homebrew-lugen4ro
+
+
+checksum:
+  name_template: 'checksums.txt'
