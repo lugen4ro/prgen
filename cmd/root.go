@@ -4,9 +4,9 @@ Copyright © 2025 Lukas Nakamura lugen4ro@gmail.com
 package cmd
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/lugen4ro/prgen/internal"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +20,7 @@ Customize your experience to get exactly the PR you want.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("prgen is great!")
+		internal.Construct()
 	},
 }
 
