@@ -1,0 +1,7 @@
+- Always annotate exported visiable functions
+- This tool uses config files that are placed under `~/.config/prgen/` which include
+  - The main configuration file with all options `config.json`
+  - The PR body template `body_template.md`
+  - The PR title template `title_template.md`
+  - The PR body generation instructions `body_instructions.md`
+  - The PR title generation instructions `title_instructions.md`
