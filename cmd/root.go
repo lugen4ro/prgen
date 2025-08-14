@@ -16,7 +16,9 @@ var rootCmd = &cobra.Command{
 	Short: "A CLI tool for generating customized GitHub PRs with the power of AI.",
 	Long: `Hello there. 
 prgen is a CLI tool that allows users to generate and create PRs on GitHub in seconds. 
-Customize your experience to get exactly the PR you want.`,
+Customize your experience to get exactly the PR you want.
+
+Your personal config files such as templates are stored under ~/.config/prgen/`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
