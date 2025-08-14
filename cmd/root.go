@@ -4,7 +4,9 @@ Copyright © 2025 Lukas Nakamura lugen4ro@gmail.com
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/lugen4ro/prgen/internal"
 	"github.com/spf13/cobra"
@@ -22,6 +24,11 @@ Your personal config files such as templates are stored under ~/.config/prgen/`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
+		configFlag, _ := cmd.Flags().GetBool("config")
+		if configFlag {
+			openConfigFile()
+			return
+		}
 		internal.Construct()
 	},
 }
@@ -45,4 +52,38 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.Flags().BoolP("config", "c", false, "Open the main config file in the default editor")
+}
+
+// openConfigFile opens the main config file with the default editor
+func openConfigFile() {
+	config, err := internal.LoadConfig()
+	if err != nil {
+		fmt.Printf("Error loading config: %v\n", err)
+		os.Exit(1)
+	}
+
+	configPath := config.GetConfigPath()
+	
+	// Try to get the default editor from environment variables
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		editor = os.Getenv("VISUAL")
+	}
+	if editor == "" {
+		// Default to common editors based on OS
+		editor = "vi" // Unix default
+	}
+
+	cmd := exec.Command(editor, configPath)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err = cmd.Run()
+	if err != nil {
+		fmt.Printf("Error opening config file with %s: %v\n", editor, err)
+		fmt.Printf("Config file location: %s\n", configPath)
+		os.Exit(1)
+	}
 }
