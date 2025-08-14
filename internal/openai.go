@@ -61,6 +61,16 @@ func GeneratePRContent(config *Config, diff string) (title, body string, err err
 	client := openai.NewClient(apiKey)
 	ctx := context.Background()
 
+	// Filter and summarize the diff to manage token usage
+	filteredDiff := diff
+	if estimateTokens(diff) > 6000 { // Use constant from diff_filter.go
+		summary, err := FilterDiff(diff)
+		if err != nil {
+			return "", "", fmt.Errorf("failed to filter diff: %w", err)
+		}
+		filteredDiff = summary.FilteredDiff
+	}
+
 	// Get model from config, default to gpt-4
 	model := "gpt-4"
 	if modelValue, ok := config.MainConfig["model"].(string); ok && modelValue != "" {
@@ -68,7 +78,7 @@ func GeneratePRContent(config *Config, diff string) (title, body string, err err
 	}
 
 	// Generate PR title
-	titlePrompt := buildTitlePrompt(config, diff)
+	titlePrompt := buildTitlePrompt(config, filteredDiff)
 	
 	// Check token limit for title prompt
 	if estimateTokens(titlePrompt) > MaxInputTokens {
@@ -96,7 +106,7 @@ func GeneratePRContent(config *Config, diff string) (title, body string, err err
 	title = titleResp.Choices[0].Message.Content
 
 	// Generate PR body
-	bodyPrompt := buildBodyPrompt(config, diff)
+	bodyPrompt := buildBodyPrompt(config, filteredDiff)
 	
 	// Check token limit for body prompt
 	if estimateTokens(bodyPrompt) > MaxInputTokens {

@@ -22,10 +22,22 @@ This tool uses config files placed under `~/.config/prgen/` which include:
 
 ### Core Configuration
 - `config.json` - Main configuration file with LLM settings
-- `body_template.md` - PR body structure with instructional placeholders
-- `title_template.md` - PR title format guidelines
 - `body_instructions.md` - PR body generation instructions for the LLM
 - `title_instructions.md` - PR title generation instructions for the LLM
+
+#### AI Provider Configuration
+
+The tool supports two AI providers:
+
+**Claude Code CLI (Default)**
+- Set `"llm_provider": "claude"` in config.json
+- Requires Claude Code CLI to be installed and available in PATH
+- Uses the local Claude Code CLI for generation
+
+**OpenAI**
+- Set `"llm_provider": "openai"` in config.json  
+- Requires `OPENAI_API_KEY` environment variable
+- Supports models like "gpt-4", "gpt-3.5-turbo"
 
 ### Examples (for reference)
 - `body_example.md` - Example of a well-formatted PR body

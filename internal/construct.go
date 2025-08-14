@@ -58,7 +58,7 @@ func Construct() {
 
 		// PRODUCTION CODE (commented out for development):
 		var err error
-		title, body, err = GeneratePRContent(config, diff)
+		title, body, err = GeneratePRContentWithProvider(config, diff)
 		return err
 	})
 	if err != nil {
