@@ -14,8 +14,6 @@ var templateFiles embed.FS
 type Config struct {
 	ConfigDir         string
 	MainConfig        map[string]interface{}
-	BodyTemplate      string
-	TitleTemplate     string
 	BodyInstructions  string
 	TitleInstructions string
 	BodyExample       string
@@ -63,8 +61,6 @@ func (c *Config) ensureConfigExists() error {
 
 	configFiles := []string{
 		"config.json",
-		"body_template.md",
-		"title_template.md",
 		"body_instructions.md",
 		"title_instructions.md",
 		"body_example.md",
@@ -112,10 +108,8 @@ func (c *Config) loadFiles() error {
 		return fmt.Errorf("failed to parse config.json: %w", err)
 	}
 
-	// Load templates and instructions
+	// Load instructions and examples
 	fileLoaders := map[string]*string{
-		"body_template.md":      &c.BodyTemplate,
-		"title_template.md":     &c.TitleTemplate,
 		"body_instructions.md":  &c.BodyInstructions,
 		"title_instructions.md": &c.TitleInstructions,
 		"body_example.md":       &c.BodyExample,
@@ -136,14 +130,6 @@ func (c *Config) loadFiles() error {
 
 func (c *Config) GetConfigPath() string {
 	return filepath.Join(c.ConfigDir, "config.json")
-}
-
-func (c *Config) GetBodyTemplatePath() string {
-	return filepath.Join(c.ConfigDir, "body_template.md")
-}
-
-func (c *Config) GetTitleTemplatePath() string {
-	return filepath.Join(c.ConfigDir, "title_template.md")
 }
 
 func (c *Config) GetBodyInstructionsPath() string {
