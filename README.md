@@ -1,5 +1,3 @@
-> [!CAUTION]
-> This project is under development and as such is not yet in a usable state.
 
 `prgen` is a tool for auto-generating GitHub PRs with the power of AI.
 
