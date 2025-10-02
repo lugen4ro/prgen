@@ -147,4 +147,3 @@ func (c *Config) GetBodyExamplePath() string {
 func (c *Config) GetTitleExamplePath() string {
 	return filepath.Join(c.ConfigDir, "title_example.md")
 }
-

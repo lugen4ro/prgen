@@ -16,7 +16,7 @@ func CreateGitHubPR(title, body string) (string, error) {
 	// Use gh CLI to create PR in draft state
 	// gh pr create --title "title" --body "body" --base main --draft
 	cmd := exec.Command("gh", "pr", "create", "--title", title, "--body", body, "--base", "main", "--draft")
-	
+
 	output, err := cmd.Output()
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {

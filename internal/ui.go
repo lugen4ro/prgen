@@ -1,7 +1,9 @@
 package internal
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -290,14 +292,49 @@ func ShowPRSuccess(prURL string) {
 // AskConfirmation prompts the user for confirmation
 func AskConfirmation(message string) bool {
 	fmt.Print(warningStyle.Render("❓ " + message + " (Y/n): "))
-	
+
 	var response string
 	fmt.Scanln(&response)
-	
+
 	// Default to yes if empty response
 	if response == "" {
 		return true
 	}
-	
+
 	return strings.ToLower(response) != "n" && strings.ToLower(response) != "no"
+}
+
+// AskBackgroundInfo prompts the user to provide background information for PR generation
+func AskBackgroundInfo() string {
+	fmt.Println()
+	fmt.Println(headerStyle.Render("📝 Background Information"))
+	fmt.Println(infoStyle.Render("Provide context about your changes to help generate a better PR:"))
+	fmt.Println(infoStyle.Render("• What problem does this solve?"))
+	fmt.Println(infoStyle.Render("• What approach did you take?"))
+	fmt.Println(infoStyle.Render("• Any important details or considerations?"))
+	fmt.Println()
+	fmt.Print(titleStyle.Render("Enter background info (press Ctrl+D when done): "))
+	fmt.Println()
+
+	var lines []string
+	reader := bufio.NewScanner(os.Stdin)
+
+	for reader.Scan() {
+		lines = append(lines, reader.Text())
+	}
+
+	if err := reader.Err(); err != nil {
+		fmt.Println(errorStyle.Render("❌ Error reading input"))
+		return ""
+	}
+
+	background := strings.Join(lines, "\n")
+
+	if strings.TrimSpace(background) == "" {
+		fmt.Println(infoStyle.Render("ℹ️  No background information provided"))
+		return ""
+	}
+
+	fmt.Println(successStyle.Render("✅ Background information recorded"))
+	return background
 }

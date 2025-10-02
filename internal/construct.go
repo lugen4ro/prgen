@@ -44,6 +44,9 @@ func Construct() {
 		return
 	}
 
+	// Collect background information from user
+	backgroundInfo := AskBackgroundInfo()
+
 	// Generate PR content with spinner
 	var title, body string
 	err = RunSpinnerWithTask("Generating PR content", func() error {
@@ -58,7 +61,7 @@ func Construct() {
 
 		// PRODUCTION CODE (commented out for development):
 		var err error
-		title, body, err = GeneratePRContentWithProvider(config, diff)
+		title, body, err = GeneratePRContentWithProvider(config, diff, backgroundInfo)
 		return err
 	})
 	if err != nil {

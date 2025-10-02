@@ -64,7 +64,7 @@ func openConfigFile() {
 	}
 
 	configPath := config.GetConfigPath()
-	
+
 	// Try to get the default editor from environment variables
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
