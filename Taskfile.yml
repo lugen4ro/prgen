@@ -1,0 +1,27 @@
+version: "3"
+
+vars:
+  BINARY_NAME: prgen
+  MAIN_PKG: .
+
+tasks:
+  build:
+    desc: Build the Go binary
+    cmds:
+      - echo "🔨 Building {{.BINARY_NAME}}..."
+      - go build -o bin/{{.BINARY_NAME}} {{.MAIN_PKG}}
+      - echo "✅ Built at bin/{{.BINARY_NAME}}"
+
+  install:
+    desc: Build and install globally to /usr/local/bin
+    deps: [build]
+    cmds:
+      - echo "📦 Installing {{.BINARY_NAME}} to /usr/local/bin..."
+      - sudo install -m 0755 bin/{{.BINARY_NAME}} /usr/local/bin/{{.BINARY_NAME}}
+      - echo "✅ Installed globally as '{{.BINARY_NAME}}'"
+
+  clean:
+    desc: Remove build artifacts
+    cmds:
+      - echo "🧹 Cleaning build artifacts..."
+      - rm -rf bin
