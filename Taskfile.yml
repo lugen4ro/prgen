@@ -13,12 +13,12 @@ tasks:
       - echo "✅ Built at bin/{{.BINARY_NAME}}"
 
   install:
-    desc: Build and install globally to /usr/local/bin
+    desc: Build and install locally as 'prgenl' to /usr/local/bin (for development)
     deps: [build]
     cmds:
-      - echo "📦 Installing {{.BINARY_NAME}} to /usr/local/bin..."
-      - sudo install -m 0755 bin/{{.BINARY_NAME}} /usr/local/bin/{{.BINARY_NAME}}
-      - echo "✅ Installed globally as '{{.BINARY_NAME}}'"
+      - echo "📦 Installing as 'prgenl' to /usr/local/bin..."
+      - sudo install -m 0755 bin/{{.BINARY_NAME}} /usr/local/bin/prgenl
+      - echo "✅ Installed globally as 'prgenl'"
 
   clean:
     desc: Remove build artifacts

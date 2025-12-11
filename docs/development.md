@@ -12,7 +12,7 @@ Run `task --list` to see all available commands:
 
 ```bash
 task build          # Build the Go binary
-task install        # Build and install globally to /usr/local/bin
+task install        # Build and install as 'prgenl' to /usr/local/bin (for development)
 task clean          # Remove build artifacts
 task release        # Create a new release
 task release:dry-run # Test release build without publishing
@@ -25,7 +25,7 @@ task release:check  # Validate GoReleaser configuration
 # Build locally
 task build
 
-# Install to /usr/local/bin
+# Install as 'prgenl' to /usr/local/bin (for development alongside brew-installed 'prgen')
 task install
 ```
 
@@ -34,6 +34,7 @@ task install
 ### Prerequisites
 
 1. Ensure `GITHUB_TOKEN` is set with repo permissions:
+
    ```bash
    export GITHUB_TOKEN=ghp_xxxxx
    ```
@@ -54,6 +55,7 @@ task release VERSION=0.2.0
 ```
 
 This will:
+
 1. Create a git tag `v0.2.0`
 2. Push the tag to origin
 3. Build binaries for darwin/linux (amd64/arm64)
@@ -64,6 +66,7 @@ This will:
 ### Installing via Homebrew
 
 Users can install with:
+
 ```bash
 brew tap lugen4ro/lugen4ro
 brew install --cask prgen
