@@ -2,11 +2,20 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os/exec"
 	"strings"
 	"unicode"
 )
+
+// claudeJSONResponse represents the JSON output from Claude CLI
+type claudeJSONResponse struct {
+	Type      string `json:"type"`
+	Result    string `json:"result"`
+	SessionID string `json:"session_id"`
+	IsError   bool   `json:"is_error"`
+}
 
 const (
 	// MaxInputTokens is the maximum number of tokens we'll send to the LLM
@@ -49,11 +58,20 @@ func estimateTokens(text string) int {
 	return estimatedTokens
 }
 
+// PRGenerationResult holds the result of PR content generation
+type PRGenerationResult struct {
+	Title     string
+	Body      string
+	SessionID string
+}
+
 // GeneratePRContentWithClaude generates both PR title and body using Claude Code CLI
-func GeneratePRContentWithClaude(config *Config, diff, background string) (title, body string, err error) {
+// If refinement is provided, it will refine the previous output based on user feedback
+// The session ID from refinement context is used to continue the conversation
+func GeneratePRContentWithClaude(config *Config, diff, background string, refinement *RefinementContext) (*PRGenerationResult, error) {
 	// Check if Claude Code CLI is available
 	if _, err := exec.LookPath("claude"); err != nil {
-		return "", "", fmt.Errorf("claude CLI not found. Please install Claude Code CLI first")
+		return nil, fmt.Errorf("claude CLI not found. Please install Claude Code CLI first")
 	}
 
 	// Filter and summarize the diff to manage token usage
@@ -61,60 +79,91 @@ func GeneratePRContentWithClaude(config *Config, diff, background string) (title
 	if estimateTokens(diff) > 6000 { // Use constant from diff_filter.go
 		summary, err := FilterDiff(diff)
 		if err != nil {
-			return "", "", fmt.Errorf("failed to filter diff: %w", err)
+			return nil, fmt.Errorf("failed to filter diff: %w", err)
 		}
 		filteredDiff = summary.FilteredDiff
 	}
 
-	// Build combined prompt for both title and body
-	combinedPrompt := buildCombinedPrompt(config, filteredDiff, background)
+	var combinedPrompt string
+	var sessionID string
+
+	if refinement != nil {
+		// For refinement, we just send the feedback since we're continuing the session
+		combinedPrompt = buildRefinementPrompt(refinement)
+		sessionID = refinement.SessionID
+	} else {
+		// Build full prompt for initial generation
+		combinedPrompt = buildCombinedPrompt(config, filteredDiff, background)
+	}
 
 	// Check token limit for combined prompt
 	if estimateTokens(combinedPrompt) > MaxInputTokens {
-		return "", "", fmt.Errorf("combined prompt too large (%d estimated tokens, max %d)", estimateTokens(combinedPrompt), MaxInputTokens)
+		return nil, fmt.Errorf("combined prompt too large (%d estimated tokens, max %d)", estimateTokens(combinedPrompt), MaxInputTokens)
 	}
 
-	response, err := callClaudeCLI(combinedPrompt)
+	// Call Claude CLI (either new session or resume existing)
+	response, newSessionID, err := callClaudeCLI(combinedPrompt, sessionID)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to generate PR content: %w", err)
+		return nil, fmt.Errorf("failed to generate PR content: %w", err)
 	}
 
 	// Parse the response to extract title and body
-	title, body, err = parseCombinedResponse(response)
+	title, body, err := parseCombinedResponse(response)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to parse Claude response: %w", err)
+		return nil, fmt.Errorf("failed to parse Claude response: %w", err)
 	}
 
-	return title, body, nil
+	return &PRGenerationResult{
+		Title:     title,
+		Body:      body,
+		SessionID: newSessionID,
+	}, nil
 }
 
 // callClaudeCLI executes the Claude Code CLI with the given prompt
-func callClaudeCLI(prompt string) (string, error) {
+// If sessionID is provided, it resumes that session; otherwise starts a new one
+// Returns the response text and the session ID for future continuation
+func callClaudeCLI(prompt string, sessionID string) (response string, newSessionID string, err error) {
 	ctx := context.Background()
 
 	// Validate prompt is not empty
 	if strings.TrimSpace(prompt) == "" {
-		return "", fmt.Errorf("empty prompt provided to Claude CLI")
+		return "", "", fmt.Errorf("empty prompt provided to Claude CLI")
 	}
 
-	// Use Claude Code CLI in print mode with text output format
-	cmd := exec.CommandContext(ctx, "claude", "-p", "--output-format", "text")
+	// Build command arguments
+	args := []string{"-p", "--output-format", "json"}
+	if sessionID != "" {
+		// Resume existing session
+		args = append(args, "--resume", sessionID)
+	}
+
+	cmd := exec.CommandContext(ctx, "claude", args...)
 	cmd.Stdin = strings.NewReader(prompt)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
-			return "", fmt.Errorf("claude CLI error (exit code %d): %s", exitError.ExitCode(), string(output))
+			return "", "", fmt.Errorf("claude CLI error (exit code %d): %s", exitError.ExitCode(), string(output))
 		}
-		return "", fmt.Errorf("failed to execute claude CLI: %w, output: %s", err, string(output))
+		return "", "", fmt.Errorf("failed to execute claude CLI: %w, output: %s", err, string(output))
 	}
 
-	response := strings.TrimSpace(string(output))
-	if response == "" {
-		return "", fmt.Errorf("empty response from Claude CLI")
+	// Parse JSON response
+	var jsonResp claudeJSONResponse
+	if err := json.Unmarshal(output, &jsonResp); err != nil {
+		return "", "", fmt.Errorf("failed to parse Claude JSON response: %w, raw output: %s", err, string(output))
 	}
 
-	return response, nil
+	if jsonResp.IsError {
+		return "", "", fmt.Errorf("Claude returned an error: %s", jsonResp.Result)
+	}
+
+	if jsonResp.Result == "" {
+		return "", "", fmt.Errorf("empty response from Claude CLI")
+	}
+
+	return jsonResp.Result, jsonResp.SessionID, nil
 }
 
 // buildCombinedPrompt constructs a single prompt for generating both PR title and body
@@ -145,6 +194,18 @@ func buildCombinedPrompt(config *Config, diff, background string) string {
 	prompt += "Please respond with the following format:\n"
 	prompt += "TITLE: [your generated title]\n"
 	prompt += "BODY:\n[your generated body]"
+
+	return prompt
+}
+
+// buildRefinementPrompt constructs a prompt for refining a previously generated PR
+// Since we're continuing the session, Claude already has context from the previous exchange
+func buildRefinementPrompt(refinement *RefinementContext) string {
+	prompt := "Please refine the PR title and body based on my feedback:\n\n"
+	prompt += refinement.Feedback + "\n\n"
+	prompt += "Please respond in the same format as before:\n"
+	prompt += "TITLE: [your refined title]\n"
+	prompt += "BODY:\n[your refined body]"
 
 	return prompt
 }

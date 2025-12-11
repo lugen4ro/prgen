@@ -304,6 +304,75 @@ func AskConfirmation(message string) bool {
 	return strings.ToLower(response) != "n" && strings.ToLower(response) != "no"
 }
 
+// RefinementChoice represents the user's choice after viewing generated PR content
+type RefinementChoice int
+
+const (
+	ChoiceAccept RefinementChoice = iota
+	ChoiceRefine
+	ChoiceCancel
+)
+
+// AskRefinementOrAccept prompts the user to accept, refine, or cancel the PR
+func AskRefinementOrAccept() RefinementChoice {
+	fmt.Println()
+	fmt.Println(headerStyle.Render("What would you like to do?"))
+	fmt.Println(infoStyle.Render("  [a] Accept and create PR"))
+	fmt.Println(infoStyle.Render("  [r] Refine with feedback"))
+	fmt.Println(infoStyle.Render("  [c] Cancel"))
+	fmt.Print(warningStyle.Render("❓ Your choice (a/r/c): "))
+
+	var response string
+	fmt.Scanln(&response)
+
+	switch strings.ToLower(strings.TrimSpace(response)) {
+	case "a", "accept", "":
+		return ChoiceAccept
+	case "r", "refine":
+		return ChoiceRefine
+	case "c", "cancel":
+		return ChoiceCancel
+	default:
+		fmt.Println(warningStyle.Render("⚠️  Invalid choice, defaulting to accept"))
+		return ChoiceAccept
+	}
+}
+
+// AskRefinementFeedback prompts the user to provide feedback for refining the PR
+func AskRefinementFeedback() string {
+	fmt.Println()
+	fmt.Println(headerStyle.Render("📝 Refinement Feedback"))
+	fmt.Println(infoStyle.Render("Describe what changes you'd like:"))
+	fmt.Println(infoStyle.Render("• What should be different about the title?"))
+	fmt.Println(infoStyle.Render("• What should be added/removed from the body?"))
+	fmt.Println(infoStyle.Render("• Any other adjustments?"))
+	fmt.Println()
+	fmt.Print(titleStyle.Render("Enter feedback (press Ctrl+D when done): "))
+	fmt.Println()
+
+	var lines []string
+	reader := bufio.NewScanner(os.Stdin)
+
+	for reader.Scan() {
+		lines = append(lines, reader.Text())
+	}
+
+	if err := reader.Err(); err != nil {
+		fmt.Println(errorStyle.Render("❌ Error reading input"))
+		return ""
+	}
+
+	feedback := strings.Join(lines, "\n")
+
+	if strings.TrimSpace(feedback) == "" {
+		fmt.Println(infoStyle.Render("ℹ️  No feedback provided"))
+		return ""
+	}
+
+	fmt.Println(successStyle.Render("✅ Feedback recorded"))
+	return feedback
+}
+
 // AskBackgroundInfo prompts the user to provide background information for PR generation
 func AskBackgroundInfo() string {
 	fmt.Println()

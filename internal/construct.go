@@ -48,10 +48,10 @@ func Construct() {
 	backgroundInfo := AskBackgroundInfo()
 
 	// Generate PR content with spinner
-	var title, body string
+	var result *PRGenerationResult
 	err = RunSpinnerWithTask("Generating PR content", func() error {
 		var err error
-		title, body, err = GeneratePRContentWithProvider(config, diff, backgroundInfo)
+		result, err = GeneratePRContentWithProvider(config, diff, backgroundInfo)
 		return err
 	})
 	if err != nil {
@@ -59,13 +59,56 @@ func Construct() {
 		return
 	}
 
-	// Display generated content
-	ShowGeneratedContent(title, body)
+	// Track session ID for conversation continuity
+	title, body, sessionID := result.Title, result.Body, result.SessionID
 
-	// Ask for confirmation before creating PR
-	if !AskConfirmation("Do you want to create this pull request?") {
-		fmt.Println(infoStyle.Render("ℹ️  PR creation cancelled by user"))
-		return
+	// Display generated content and handle refinement loop
+	for {
+		ShowGeneratedContent(title, body)
+
+		// Ask user what they want to do
+		choice := AskRefinementOrAccept()
+
+		switch choice {
+		case ChoiceAccept:
+			// User accepted, break out of refinement loop
+			break
+		case ChoiceRefine:
+			// Get feedback and refine
+			feedback := AskRefinementFeedback()
+			if feedback == "" {
+				// No feedback provided, show content again
+				continue
+			}
+
+			// Refine the PR content using the same session for conversation continuity
+			refinement := &RefinementContext{
+				SessionID: sessionID,
+				Feedback:  feedback,
+			}
+
+			err = RunSpinnerWithTask("Refining PR content", func() error {
+				var err error
+				result, err = RefinePRContentWithProvider(config, diff, backgroundInfo, refinement)
+				return err
+			})
+			if err != nil {
+				ShowError("Failed to refine PR content", err)
+				return
+			}
+
+			// Update with refined content (session ID should remain the same)
+			title, body, sessionID = result.Title, result.Body, result.SessionID
+
+			// Loop continues to show refined content
+			continue
+		case ChoiceCancel:
+			fmt.Println(infoStyle.Render("ℹ️  PR creation cancelled by user"))
+			return
+		}
+
+		// If we got here via ChoiceAccept, break the loop
+		break
 	}
 
 	// Push current branch to remote with spinner
