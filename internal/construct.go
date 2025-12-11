@@ -50,16 +50,6 @@ func Construct() {
 	// Generate PR content with spinner
 	var title, body string
 	err = RunSpinnerWithTask("Generating PR content", func() error {
-		// DEVELOPMENT MODE: Skip OpenAI to save tokens during testing
-		// TODO: Remove this and uncomment the real generation code below
-		// 		title = "feat: add OpenAI integration for PR generation"
-		// 		body = `## TEST BODY
-		// - Implemented OpenAI integration for generating PR titles and bodies
-		// - Added token limit protection to control costs
-		// `
-		// return nil
-
-		// PRODUCTION CODE (commented out for development):
 		var err error
 		title, body, err = GeneratePRContentWithProvider(config, diff, backgroundInfo)
 		return err

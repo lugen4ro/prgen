@@ -5,7 +5,49 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"unicode"
 )
+
+const (
+	// MaxInputTokens is the maximum number of tokens we'll send to the LLM
+	// This helps control costs by preventing very large inputs
+	MaxInputTokens = 8000
+)
+
+// estimateTokens provides a rough estimate of token count
+// Accounts for both English and Japanese text patterns:
+// - English: ~4 characters per token
+// - Japanese: Each character (hiragana, katakana, kanji) ≈ 1 token
+// - Code/symbols: More conservative estimation
+func estimateTokens(text string) int {
+	var japaneseChars, englishChars, otherChars int
+
+	for _, r := range text {
+		switch {
+		case unicode.In(r, unicode.Hiragana, unicode.Katakana, unicode.Han):
+			japaneseChars++
+		case unicode.IsLetter(r) && r < 128: // ASCII letters
+			englishChars++
+		default:
+			otherChars++
+		}
+	}
+
+	// Conservative estimation:
+	// - Japanese chars: 1 token each
+	// - English chars: 1 token per 3 chars (more conservative than 4)
+	// - Other chars (code, symbols): 1 token per 2 chars
+	estimatedTokens := japaneseChars + englishChars/3 + otherChars/2
+
+	// Add word-based estimation for English text structure
+	wordCount := len(strings.Fields(text))
+
+	// Return the higher of the two estimates for safety
+	if wordCount > estimatedTokens {
+		return wordCount
+	}
+	return estimatedTokens
+}
 
 // GeneratePRContentWithClaude generates both PR title and body using Claude Code CLI
 func GeneratePRContentWithClaude(config *Config, diff, background string) (title, body string, err error) {
