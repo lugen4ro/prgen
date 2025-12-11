@@ -5,10 +5,24 @@
 Can be installed with brew.
 
 ```bash
+brew install lugen4ro/homebrew-lugen4ro/prgen
+```
+
+### For MacOS User
+
+Since the binary hasn't been notarized by Apple, macOS Gatekeeper may block it. You can bypass this by either:
+
+1. Using the `--no-quarantine` flag during installation (will be deprecated in late 2026):
+
+```bash
 brew install --no-quarantine lugen4ro/homebrew-lugen4ro/prgen
 ```
 
-(Requires the `--no-quarantine` flag for macOS because it hasn't been notarized by Apple)
+2. Removing the quarantine attribute manually after installation like:
+
+```bash
+sudo xattr -rd com.apple.quarantine /opt/homebrew/bin/prgen
+```
 
 ## Requirements
 
